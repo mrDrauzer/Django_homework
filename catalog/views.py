@@ -1,14 +1,10 @@
-from django.shortcuts import render
-from .models import Product, Category
+from django.shortcuts import render, get_object_or_404
+from .models import Product, Category, Contact
 
 
 def home(request):
     """Контроллер главной страницы"""
-    # Дополнительное задание - последние 5 продуктов
     latest_products = Product.objects.order_by('-created_at')[:5]
-    print("Последние 5 продуктов:")
-    for product in latest_products:
-        print(f"- {product.name} ({product.created_at})")
 
     context = {
         'latest_products': latest_products,
@@ -25,21 +21,12 @@ def contacts(request):
         name = request.POST.get('name')
         phone = request.POST.get('phone')
         message = request.POST.get('message')
-        print(f"Получено сообщение от {name} ({phone}): {message}")
         context['message_sent'] = True
 
-    # Дополнительное задание - контактные данные из БД
-    # После создания модели Contact раскомментируйте:
-    # from .models import Contact
-    # context['contact_info'] = Contact.objects.first()
+    # Получаем контактные данные из БД
+    context['contact_info'] = Contact.objects.first()
 
     return render(request, 'catalog/contacts.html', context)
-
-
-def index(request):
-    """Контроллер главной страницы (альтернативное название)"""
-    # Если используете index вместо home
-    return home(request)
 
 
 def product_list(request):
@@ -56,14 +43,11 @@ def product_list(request):
 
 def category_products(request, category_id):
     """Контроллер продуктов определенной категории"""
-    try:
-        category = Category.objects.get(id=category_id)
-        products = Product.objects.filter(category=category)
+    category = get_object_or_404(Category, id=category_id)
+    products = Product.objects.filter(category=category)
 
-        context = {
-            'category': category,
-            'products': products,
-        }
-        return render(request, 'catalog/category_products.html', context)
-    except Category.DoesNotExist:
-        return render(request, 'catalog/404.html', status=404)
+    context = {
+        'category': category,
+        'products': products,
+    }
+    return render(request, 'catalog/category_products.html', context)
