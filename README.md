@@ -106,44 +106,62 @@ python manage.py fill_catalog
 ---
 
 ## 📁 Структура проекта
-
+```
 Django_homework/
-├── skystore/ # Настройки проекта
-│ ├── settings.py # Конфигурация Django
-│ ├── urls.py # Корневые маршруты
-│ └── wsgi.py
-│
-├── catalog/ # Приложение каталога
-│ ├── models.py # Модели: Category, Product, Contact
-│ ├── views.py # ListView, DetailView, CreateView
-│ ├── urls.py # Маршруты приложения
-│ ├── admin.py # Настройки админ-панели
-│ ├── forms.py # ModelForm для добавления товаров
-│ │
-│ ├── templates/
-│ │ ├── catalog/
-│ │ │ ├── base.html # Базовый шаблон (стили, структура)
-│ │ │ ├── home.html # Главная страница
-│ │ │ ├── product_detail.html # Страница одного товара
-│ │ │ ├── product_form.html # Форма добавления товара
-│ │ │ └── contacts.html # Страница контактов
-│ │ └── includes/
-│ │ └── _menu.html # Подшаблон меню навигации
-│ │
-│ └── management/commands/
-│ └── fill_catalog.py # Команда заполнения данными
-│
-├── static/ # Статические файлы (CSS, JS, images)
-├── media/ # Загружаемые файлы (изображения товаров)
-├── .env.sample # Пример файла окружения
-├── pyproject.toml # Зависимости Poetry
-├── requirements.txt # Зависимости pip
 ├── manage.py
-└── README.md
+├── pyproject.toml
+├── requirements.txt  
+├── .env.sample
+├── .gitignore
+├── README.md
+│
+├── skystore/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   └── asgi.py
+│
+├── catalog/
+│   ├── __init__.py
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── tests.py
+│   │
+│   ├── templates/
+│   │   ├── catalog/
+│   │   │   ├── base.html
+│   │   │   ├── home.html
+│   │   │   ├── product_detail.html
+│   │   │   ├── product_form.html
+│   │   │   └── contacts.html
+│   │   └── includes/
+│   │       └── _menu.html
+│   │
+│   ├── management/
+│   │   ├── __init__.py
+│   │   └── commands/
+│   │       ├── __init__.py
+│   │       └── fill_catalog.py
+│   │
+│   └── migrations/
+│       ├── __init__.py
+│       └── 0001_initial.py
+│
+├── static/
+│   ├── css/
+│   ├── js/
+│   └── images/
+│
+└── media/
+    └── products/
+```
 
 
-
----
 
 ## 🔧 Технологии
 
