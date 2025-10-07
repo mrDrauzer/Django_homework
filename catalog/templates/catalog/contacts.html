@@ -1,235 +1,81 @@
 {% extends 'catalog/base.html' %}
-
-{% block title %}Контакты - Skystore{% endblock %}
+{% block title %}Контакты - SkyStore{% endblock %}
 
 {% block content %}
-<!-- Page Header -->
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex align-items-center mb-4">
-            <i class="bi bi-envelope-fill text-primary me-3" style="font-size: 2rem;"></i>
-            <div>
-                <h1 class="mb-0">Контакты</h1>
-                <p class="text-muted mb-0">Свяжитесь с нами любым удобным способом</p>
-            </div>
-        </div>
-    </div>
-</div>
+<div class="contacts-page">
+  <div class="contacts-header">
+    <h1>✉️ Контакты</h1>
+    <p>Свяжитесь с нами любым удобным способом</p>
+  </div>
 
-<div class="row">
-    <!-- Contact Information -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">
-                    <i class="bi bi-info-circle me-2"></i>Наши данные
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="contact-info">
-                    <div class="mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-globe text-primary me-3"></i>
-                            <div>
-                                <strong>Страна:</strong>
-                                <span class="ms-2">USA</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-building text-primary me-3"></i>
-                            <div>
-                                <strong>ИНН:</strong>
-                                <span class="ms-2">91-1144442</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-geo-alt text-primary me-3"></i>
-                            <div>
-                                <strong>Адрес:</strong>
-                                <span class="ms-2">Redmond, WA, 98052-6399</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <hr>
-                
-                <div class="additional-info">
-                    <h6 class="text-primary">Дополнительная информация</h6>
-                    <ul class="list-unstyled">
-                        <li><i class="bi bi-clock text-muted me-2"></i>Время работы: 24/7</li>
-                        <li><i class="bi bi-translate text-muted me-2"></i>Языки: Русский, English</li>
-                        <li><i class="bi bi-shield-check text-muted me-2"></i>Техподдержка: Круглосуточно</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+  <div class="contacts-grid">
+    <!-- Блок информации -->
+    <div class="contacts-info">
+      <h2>ℹ️ Наши данные</h2>
+
+      <div class="info-item">
+        <strong>🌍 Страна:</strong>
+        <span>{{ contact_info.country|default:"USA" }}</span>
+      </div>
+
+      <div class="info-item">
+        <strong>🏢 ИНН:</strong>
+        <span>{{ contact_info.inn|default:"91-1144442" }}</span>
+      </div>
+
+      <div class="info-item">
+        <strong>📍 Адрес:</strong>
+        <span>{{ contact_info.address|default:"Redmond, WA, 98052-6399" }}</span>
+      </div>
+
+      <div class="additional">
+        <h3>Дополнительная информация</h3>
+        <ul>
+          <li>🕐 Время работы: 24/7</li>
+          <li>🗣️ Языки: Русский, English</li>
+          <li>🛡️ Техподдержка: Круглосуточно</li>
+        </ul>
+      </div>
     </div>
 
-    <!-- Contact Form -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-header bg-success text-white">
-                <h5 class="card-title mb-0">
-                    <i class="bi bi-chat-dots me-2"></i>Свяжитесь с нами
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if message_sent %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle me-2"></i>
-                    <strong>Успех!</strong> Ваше сообщение успешно отправлено. 
-                    Мы свяжемся с вами в ближайшее время.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                {% endif %}
-                
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="name" class="form-label">
-                            <i class="bi bi-person me-1"></i>Имя *
-                        </label>
-                        <input 
-                            type="text" 
-                            class="form-control" 
-                            id="name" 
-                            name="name" 
-                            placeholder="Введите ваше имя"
-                            required
-                        >
-                        <div class="invalid-feedback">
-                            Пожалуйста, введите ваше имя.
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="phone" class="form-label">
-                            <i class="bi bi-telephone me-1"></i>Телефон *
-                        </label>
-                        <input 
-                            type="tel" 
-                            class="form-control" 
-                            id="phone" 
-                            name="phone" 
-                            placeholder="+7 (999) 123-45-67"
-                            required
-                        >
-                        <div class="invalid-feedback">
-                            Пожалуйста, введите номер телефона.
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="message" class="form-label">
-                            <i class="bi bi-chat-text me-1"></i>Сообщение *
-                        </label>
-                        <textarea 
-                            class="form-control" 
-                            id="message" 
-                            name="message" 
-                            rows="5" 
-                            placeholder="Расскажите, чем мы можем вам помочь..."
-                            required
-                        ></textarea>
-                        <div class="invalid-feedback">
-                            Пожалуйста, введите ваше сообщение.
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i class="bi bi-send me-2"></i>Отправить сообщение
-                        </button>
-                    </div>
-                    
-                    <small class="text-muted mt-2 d-block">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Поля, отмеченные *, обязательны для заполнения
-                    </small>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+    <!-- Блок формы -->
+    <div class="contacts-form">
+      <h2>💬 Свяжитесь с нами</h2>
 
-<!-- Additional Information Section -->
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="alert alert-info" role="alert">
-            <div class="row align-items-center">
-                <div class="col-md-1 text-center">
-                    <i class="bi bi-lightbulb text-info" style="font-size: 2rem;"></i>
-                </div>
-                <div class="col-md-11">
-                    <h5 class="alert-heading">Нужна помощь?</h5>
-                    <p class="mb-0">
-                        Наша команда поддержки готова помочь вам 24/7. 
-                        Отправьте нам сообщение через форму выше, и мы свяжемся с вами 
-                        в течение нескольких часов.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+      <form method="post">
+        {% csrf_token %}
 
-<!-- FAQ Section -->
-<div class="row mt-4">
-    <div class="col-12">
-        <h3 class="mb-3">
-            <i class="bi bi-question-circle text-primary me-2"></i>
-            Часто задаваемые вопросы
-        </h3>
-        <div class="accordion" id="faqAccordion">
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="faq1">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
-                        Как быстро вы отвечаете на сообщения?
-                    </button>
-                </h2>
-                <div id="collapse1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                    <div class="accordion-body">
-                        Мы стараемся отвечать на все сообщения в течение 2-4 часов в рабочее время 
-                        и в течение 24 часов в выходные дни.
-                    </div>
-                </div>
-            </div>
-            
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="faq2">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
-                        На каких языках вы предоставляете поддержку?
-                    </button>
-                </h2>
-                <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                    <div class="accordion-body">
-                        Мы предоставляем поддержку на русском и английском языках.
-                    </div>
-                </div>
-            </div>
-            
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="faq3">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
-                        Можно ли получить консультацию по выбору продукта?
-                    </button>
-                </h2>
-                <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                    <div class="accordion-body">
-                        Конечно! Наши специалисты помогут вам выбрать наиболее подходящие решения 
-                        для ваших задач. Просто опишите свои требования в форме выше.
-                    </div>
-                </div>
-            </div>
+        <div class="form-group">
+          <label for="name">Имя *</label>
+          <input type="text" id="name" name="name" placeholder="Введите ваше имя" required>
         </div>
+
+        <div class="form-group">
+          <label for="phone">Телефон *</label>
+          <input type="tel" id="phone" name="phone" placeholder="+7 (999) 123-45-67" required>
+        </div>
+
+        <div class="form-group">
+          <label for="message">Сообщение *</label>
+          <textarea id="message" name="message" placeholder="Расскажите, чем мы можем вам помочь..." required></textarea>
+        </div>
+
+        <button type="submit">✉️ Отправить сообщение</button>
+
+        <p class="form-note">Поля, отмеченные *, обязательны для заполнения</p>
+
+        {% if message_sent %}
+          <p class="success-message">
+            ✅ Сообщение отправлено! Мы свяжемся с вами в ближайшее время.
+          </p>
+        {% endif %}
+      </form>
     </div>
+  </div>
+
+  <div class="contacts-footer">
+    <p><strong>Нужна помощь?</strong></p>
+    <p>Наша команда поддержки готова помочь вам 24/7. Отправьте нам сообщение через форму выше, и мы свяжемся с вами в течение нескольких часов.</p>
+  </div>
 </div>
 {% endblock %}

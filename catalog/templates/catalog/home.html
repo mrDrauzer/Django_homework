@@ -1,19 +1,20 @@
-<!-- templates/catalog/home.html -->
-{% extends 'base.html' %}
+{% extends 'catalog/base.html' %}
+{% block title %}Главная - SkyStore{% endblock %}
 {% block content %}
+  <h1>📦 Каталог товаров</h1>
+
   <div class="grid">
     {% for product in products %}
       <article class="card">
-        <a href="{% url 'catalog:product_detail' product.pk %}">
-          {% if product.image %}
-            <img src="{{ product.image.url }}" alt="{{ product.name }}">
-          {% endif %}
-          <h3>{{ product.name }}</h3>
-        </a>
+        {% if product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% endif %}
+        <h3><a href="{% url 'catalog:product_detail' product.pk %}">{{ product.name }}</a></h3>
         <p>{{ product.description|default:''|truncatechars:100 }}</p>
+        <p class="price">💰 {{ product.price }} ₽</p>
       </article>
     {% empty %}
-      <p>Пока нет товаров</p>
+      <p>Пока нет товаров в каталоге</p>
     {% endfor %}
   </div>
 
@@ -24,7 +25,7 @@
       {% endif %}
       <span>Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
       {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}">Вперед »</a>
+        <a href="?page={{ page_obj.next_page_number }}">Вперёд »</a>
       {% endif %}
     </nav>
   {% endif %}

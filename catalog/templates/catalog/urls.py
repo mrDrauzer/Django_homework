@@ -1,7 +1,11 @@
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
+from .views import ProductListView, ProductDetailView, ProductCreateView, contacts
+
+app_name = 'catalog'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('catalog.urls')),
+    path('', ProductListView.as_view(), name='home'),
+    path('contacts/', contacts, name='contacts'),
+    path('product/<int:pk>/', ProductDetailView.as_view(), name='product_detail'),
+    path('product/add/', ProductCreateView.as_view(), name='product_add'),
 ]

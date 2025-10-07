@@ -1,9 +1,49 @@
-{% extends 'base.html' %}
+{% extends 'catalog/base.html' %}
+{% block title %}Добавить товар - SkyStore{% endblock %}
 {% block content %}
-  <h1>Добавить товар</h1>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Сохранить</button>
-  </form>
+  <div class="product-detail">
+    <h1>➕ Добавить новый товар</h1>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 6px; font-weight: 600;">Название *</label>
+        {{ form.name }}
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 6px; font-weight: 600;">Описание *</label>
+        {{ form.description }}
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 6px; font-weight: 600;">Изображение</label>
+        {{ form.image }}
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 6px; font-weight: 600;">Категория *</label>
+        {{ form.category }}
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 6px; font-weight: 600;">Цена *</label>
+        {{ form.price }}
+      </div>
+
+      {% if form.errors %}
+        <div style="color: #dc3545; margin-bottom: 16px; padding: 12px; background: #f8d7da; border-radius: 6px;">
+          <strong>Ошибки в форме:</strong>
+          {{ form.errors }}
+        </div>
+      {% endif %}
+
+      <button type="submit" style="padding: 12px 24px; background: #28a745; color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+        💾 Сохранить товар
+      </button>
+
+      <a href="{% url 'catalog:home' %}" style="margin-left: 12px; color: #0d6efd; text-decoration: none; font-weight: 600;">Отмена</a>
+    </form>
+  </div>
 {% endblock %}
