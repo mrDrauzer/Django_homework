@@ -1,86 +1,31 @@
-{% extends 'catalog/base.html' %}
-
-{% block title %}Главная - Skystore{% endblock %}
-
+<!-- templates/catalog/home.html -->
+{% extends 'base.html' %}
 {% block content %}
-<!-- Hero Section (Jumbotron) -->
-<div class="p-5 mb-4 bg-light rounded-3">
-    <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold">Добро пожаловать в Skystore</h1>
-        <p class="col-md-8 fs-4">
-            Skystore - это отличный вариант хранения ваших плагинов и примеров кода, 
-            который вы бы хотели продать
-        </p>
-        <hr class="my-4">
-        <p class="lead">
-            Найдите качественные решения для ваших проектов. 
-            Наш магазин предлагает широкий выбор готовых компонентов, 
-            плагинов и примеров кода для разработчиков.
-        </p>
-        <a class="btn btn-primary btn-lg" href="{% url 'catalog:contacts' %}" role="button">
-            Связаться с нами
+  <div class="grid">
+    {% for product in products %}
+      <article class="card">
+        <a href="{% url 'catalog:product_detail' product.pk %}">
+          {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+          {% endif %}
+          <h3>{{ product.name }}</h3>
         </a>
-    </div>
-</div>
+        <p>{{ product.description|default:''|truncatechars:100 }}</p>
+      </article>
+    {% empty %}
+      <p>Пока нет товаров</p>
+    {% endfor %}
+  </div>
 
-<!-- Features Section -->
-<div class="row">
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="bi bi-code-slash"></i> Качественный код
-                </h5>
-                <p class="card-text">
-                    Все наши продукты проходят тщательную проверку качества 
-                    и соответствуют современным стандартам разработки.
-                </p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="bi bi-lightning"></i> Быстрая интеграция
-                </h5>
-                <p class="card-text">
-                    Наши решения легко интегрируются в существующие проекты 
-                    и позволяют значительно сократить время разработки.
-                </p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="bi bi-headset"></i> Поддержка 24/7
-                </h5>
-                <p class="card-text">
-                    Наша команда всегда готова помочь вам с внедрением 
-                    и настройкой приобретенных решений.
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Call to Action Section -->
-<div class="mt-5 p-4 bg-primary text-white rounded">
-    <div class="row align-items-center">
-        <div class="col-md-8">
-            <h3>Готовы начать?</h3>
-            <p class="mb-0">
-                Присоединяйтесь к тысячам разработчиков, которые уже используют 
-                наши решения для своих проектов.
-            </p>
-        </div>
-        <div class="col-md-4 text-end">
-            <a href="{% url 'catalog:contacts' %}" class="btn btn-light btn-lg">
-                Начать сейчас
-            </a>
-        </div>
-    </div>
-</div>
+  {% if is_paginated %}
+    <nav class="pager">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">« Назад</a>
+      {% endif %}
+      <span>Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Вперед »</a>
+      {% endif %}
+    </nav>
+  {% endif %}
 {% endblock %}
