@@ -1,0 +1,20 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Удаление статьи{% endblock %}
+
+{% block content %}
+<div style="max-width:600px; margin:50px auto; text-align:center;">
+  <h1 style="color:#dc3545;">🗑️ Подтверждение удаления</h1>
+  <p style="font-size:18px; margin:30px 0; line-height:1.6;">
+    Вы уверены, что хотите удалить статью<br>
+    <strong style="color:#000;">"{{ object.title }}"</strong>?
+  </p>
+  <p style="color:#666; margin-bottom:30px;">Это действие нельзя будет отменить.</p>
+  
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" style="padding:12px 24px; background:#dc3545; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:16px; font-weight:600; margin-right:10px;">Да, удалить</button>
+    <a href="{% url 'blog:detail' object.pk %}" style="display:inline-block; padding:12px 24px; background:#6c757d; color:#fff; text-decoration:none; border-radius:6px; font-weight:600;">Отмена</a>
+  </form>
+</div>
+{% endblock %}

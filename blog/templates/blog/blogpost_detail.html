@@ -1,0 +1,27 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ post.title }} - SkyStore{% endblock %}
+
+{% block content %}
+<article class="product-detail">
+  <h1>{{ post.title }}</h1>
+  
+  <p class="meta">
+    🗓️ {{ post.created_at|date:"d.m.Y H:i" }} | 👁️ {{ post.views_count }} просмотров
+  </p>
+  
+  {% if post.preview %}
+  <img src="{{ post.preview.url }}" alt="{{ post.title }}" class="detail-image">
+  {% endif %}
+  
+  <div class="desc">
+    {{ post.content|linebreaks }}
+  </div>
+  
+  <div style="margin-top:30px; padding-top:20px; border-top:1px solid #ddd;">
+    <a href="{% url 'blog:update' post.pk %}" style="display:inline-block; padding:10px 20px; background:#ffc107; color:#000; text-decoration:none; border-radius:6px; margin-right:10px; font-weight:600;">✏️ Редактировать</a>
+    <a href="{% url 'blog:delete' post.pk %}" style="display:inline-block; padding:10px 20px; background:#dc3545; color:#fff; text-decoration:none; border-radius:6px; margin-right:10px; font-weight:600;">🗑️ Удалить</a>
+    <a href="{% url 'blog:list' %}" class="back">← Назад к списку</a>
+  </div>
+</article>
+{% endblock %}
