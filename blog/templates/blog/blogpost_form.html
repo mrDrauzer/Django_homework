@@ -1,0 +1,111 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{% if object %}Редактирование{% else %}Создание{% endif %} статьи{% endblock %}
+
+{% block content %}
+<div class="product-detail">
+  <h1>{% if object %}✏️ Редактирование статьи{% else %}➕ Создание новой статьи{% endif %}</h1>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Заголовок -->
+    <div style="margin-bottom:20px;">
+      <label for="id_title" style="display:block; font-weight:600; margin-bottom:8px;">
+        Заголовок <small style="color:#666;">(макс. 200 символов)</small>
+      </label>
+      {{ form.title }}
+      <small id="title-counter" style="color:#666;">0 / 200</small>
+    </div>
+
+    <!-- Содержимое -->
+    <div style="margin-bottom:20px;">
+      <label for="id_content" style="display:block; font-weight:600; margin-bottom:8px;">
+        Содержимое <small style="color:#666;">(макс. 35,000 символов)</small>
+      </label>
+      {{ form.content }}
+      <small id="content-counter" style="color:#666;">0 / 35,000</small>
+    </div>
+
+    <!-- Превью -->
+    <div style="margin-bottom:20px;">
+      <label for="id_preview" style="display:block; font-weight:600; margin-bottom:8px;">
+        Превью (изображение)
+      </label>
+      {{ form.preview }}
+    </div>
+
+    <!-- Опубликовать -->
+    <div style="margin-bottom:20px;">
+      <label style="display:flex; align-items:center; gap:10px;">
+        {{ form.is_published }}
+        <span style="font-weight:600;">Опубликовать статью</span>
+      </label>
+    </div>
+
+    <!-- Кнопки -->
+    <div style="margin-top:30px;">
+      <button type="submit" style="padding:12px 24px; background:#28a745; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:16px; font-weight:600; margin-right:10px;">💾 Сохранить</button>
+      <a href="{% url 'blog:list' %}" style="display:inline-block; padding:12px 24px; background:#6c757d; color:#fff; text-decoration:none; border-radius:6px; font-weight:600;">Отмена</a>
+    </div>
+  </form>
+</div>
+
+<style>
+  form input[type="text"],
+  form textarea,
+  form input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  form textarea {
+    min-height: 250px;
+    resize: vertical;
+  }
+  form p {
+    margin-bottom: 20px;
+  }
+  form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+</style>
+
+<script>
+  // Счётчик символов для заголовка
+  const titleInput = document.getElementById('id_title');
+  const titleCounter = document.getElementById('title-counter');
+
+  titleInput.addEventListener('input', function() {
+    const length = this.value.length;
+    titleCounter.textContent = `${length} / 200`;
+    titleCounter.style.color = length > 200 ? '#dc3545' : '#666';
+  });
+
+  // Инициализация счётчика при загрузке
+  if (titleInput.value) {
+    titleCounter.textContent = `${titleInput.value.length} / 200`;
+  }
+
+  // Счётчик символов для содержимого
+  const contentInput = document.getElementById('id_content');
+  const contentCounter = document.getElementById('content-counter');
+
+  contentInput.addEventListener('input', function() {
+    const length = this.value.length;
+    contentCounter.textContent = `${length} / 35,000`;
+    contentCounter.style.color = length > 35000 ? '#dc3545' : '#666';
+  });
+
+  // Инициализация счётчика при загрузке
+  if (contentInput.value) {
+    contentCounter.textContent = `${contentInput.value.length} / 35,000`;
+  }
+</script>
+{% endblock %}
