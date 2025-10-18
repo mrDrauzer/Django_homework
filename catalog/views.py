@@ -1,16 +1,14 @@
-from django.shortcuts import render
-from django.views.generic import DetailView, ListView, CreateView, TemplateView
 from django.urls import reverse_lazy
-from django import forms
-from .models import Product, Category, Contact
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
+from .models import Product
+from .forms import ProductForm  # ✅ Импортируем форму
 
 
 class ProductListView(ListView):
-    """Список всех товаров"""
+    """Список товаров на главной странице"""
     model = Product
     template_name = 'catalog/home.html'
     context_object_name = 'products'
-    paginate_by = 12
 
 
 class ProductDetailView(DetailView):
@@ -20,62 +18,40 @@ class ProductDetailView(DetailView):
     context_object_name = 'product'
 
 
-class ProductForm(forms.ModelForm):
-    """Форма для создания/редактирования товара"""
-
-    class Meta:
-        model = Product
-        fields = ('name', 'description', 'image', 'category', 'price')
-
-
 class ProductCreateView(CreateView):
     """Создание нового товара"""
     model = Product
-    form_class = ProductForm
+    form_class = ProductForm  # ✅ Используем форму вместо fields
     template_name = 'catalog/product_form.html'
     success_url = reverse_lazy('catalog:home')
 
 
-# ✅ Переводим FBV contacts на CBV
+class ProductUpdateView(UpdateView):
+    """Редактирование товара"""
+    model = Product
+    form_class = ProductForm  # ✅ Используем форму вместо fields
+    template_name = 'catalog/product_form.html'
+
+    def get_success_url(self):
+        """Перенаправляем на страницу товара после редактирования"""
+        return reverse_lazy('catalog:product_detail', kwargs={'pk': self.object.pk})
+
+
+class ProductDeleteView(DeleteView):
+    """Удаление товара"""
+    model = Product
+    template_name = 'catalog/product_confirm_delete.html'  # ✅ Добавляем шаблон
+    success_url = reverse_lazy('catalog:home')
+
+
 class ContactsView(TemplateView):
-    """Страница контактов с формой обратной связи"""
+    """Страница контактов"""
     template_name = 'catalog/contacts.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Добавляем контактную информацию из БД
-        context['contact_info'] = Contact.objects.first()
-        return context
-
     def post(self, request, *args, **kwargs):
-        """Обработка формы обратной связи"""
+        """Обработка отправки формы контактов"""
         name = request.POST.get('name')
-        phone = request.POST.get('phone')
+        email = request.POST.get('email')
         message = request.POST.get('message')
-
-        # Здесь можно сохранить данные или отправить email
-        print(f'{name} ({phone}): {message}')
-
-        # Добавляем флаг успешной отправки
-        context = self.get_context_data(**kwargs)
-        context['message_sent'] = True
-        return self.render_to_response(context)
-
-
-# ✅ Переводим FBV category_products на CBV
-class CategoryProductsView(ListView):
-    """Список товаров в категории"""
-    model = Product
-    template_name = 'catalog/category_products.html'
-    context_object_name = 'products'
-
-    def get_queryset(self):
-        """Фильтруем товары по категории"""
-        category_id = self.kwargs['category_id']
-        return Product.objects.filter(category_id=category_id)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        category_id = self.kwargs['category_id']
-        context['category'] = Category.objects.get(id=category_id)
-        return context
+        print(f'Получено сообщение от {name} ({email}): {message}')
+        return self.render_to_response(self.get_context_data())
