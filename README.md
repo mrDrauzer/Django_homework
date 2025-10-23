@@ -48,6 +48,19 @@
   - DeleteView - удаление с подтверждением
 - ✅ **Улучшенный manage.py** - вывод доступных URL при запуске сервера
 
+
+### Домашнее задание #4 — Формы, валидация и стилизация
+
+- ✅ Создана форма `ProductForm` для модели `Product`
+- ✅ Реализован CRUD через Django Forms
+- ✅ Добавлена валидация:
+  - На запрещённые слова в названии и описании (методы `clean_name()` и `clean_description()`)
+  - На отрицательные значения цены (метод `clean_price()`)
+  - ⭐ Дополнительно: проверка формата и размера загружаемых изображений (`clean_image()`)
+- ✅ Формы стилизованы (метод `__init__` + CSS)
+- ✅ Реализован шаблон подтверждения удаления (`product_confirm_delete.html`)
+- ✅ Все CRUD-контроллеры зарегистрированы в `catalog/urls.py`
+- ✅ Тестирование — все кейсы проходят корректно
 ---
 
 ## 🛠 Запуск проекта
@@ -143,52 +156,50 @@ text
 
 ```
 Django_homework/
-├── skystore/ # Настройки проекта
-│ ├── settings.py
-│ ├── urls.py # Главный маршрутизатор
-│ └── wsgi.py
-├── catalog/ # Приложение каталога товаров
-│ ├── models.py # Category, Product, Contact
-│ ├── views.py # CBV контроллеры (ListView, DetailView, CreateView, ContactsView)
-│ ├── urls.py # Маршруты каталога
-│ ├── admin.py # Настройки админки
-│ ├── templates/
-│ │ ├── catalog/
-│ │ │ ├── base.html # Базовый шаблон
-│ │ │ ├── home.html # Главная страница
-│ │ │ ├── contacts.html # Страница контактов
-│ │ │ ├── product_detail.html
-│ │ │ └── product_form.html
-│ │ └── includes/
-│ │ └── _menu.html # Навигационное меню
-│ └── management/
-│ └── commands/
-│ └── fill_catalog.py # Кастомная команда заполнения
-├── blog/ # ⭐ Приложение блога (NEW)
-│ ├── models.py # BlogPost модель
-│ ├── views.py # CBV контроллеры блога
-│ ├── urls.py # Маршруты блога
-│ ├── admin.py # Админка блога
-│ └── templates/
-│ └── blog/
-│ ├── blogpost_list.html
-│ ├── blogpost_detail.html
-│ ├── blogpost_form.html
-│ └── blogpost_confirm_delete.html
-├── static/
-│ └── css/
-│ └── main.css # Глобальные стили
-├── media/ # Загружаемые файлы
-│ ├── products/ # Изображения товаров
-│ └── blog_previews/ # Превью блоговых записей
-├── fixtures/ # Тестовые данные
-│ ├── categories.json
-│ ├── products.json
-│ └── contacts.json
-├── manage.py # ⭐ Улучшенный manage.py с выводом URL
-├── .env.sample # Шаблон переменных окружения
-├── pyproject.toml # Poetry зависимости
-└── README.md
+├── skystore/                    # Настройки проекта
+│   ├── settings.py              # Основные настройки
+│   ├── urls.py                  # Главный роутер проекта
+│   └── wsgi.py                  # WSGI конфигурация
+├── catalog/                     # Приложение каталога товаров
+│   ├── admin.py                 # Настройка админки (Category, Product, Contact)
+│   ├── forms.py                 # Формы (ProductForm с валидацией)
+│   ├── models.py                # Модели (Category, Product, Contact)
+│   ├── urls.py                  # URL маршруты приложения
+│   ├── views.py                 # Контроллеры (CBV для продуктов и контактов)
+│   └── templates/
+│       └── catalog/
+│           ├── base.html            # Базовый шаблон
+│           ├── home.html            # Главная страница с продуктами
+│           ├── contacts.html        # Страница контактов
+│           ├── product_detail.html  # Детальная карточка продукта с кнопками управления
+│           ├── product_form.html    # Форма создания/редактирования продукта
+│           └── product_confirm_delete.html # Подтверждение удаления продукта
+├── blog/                        # Приложение блога
+│   ├── admin.py                 # Админка блога (BlogPost)
+│   ├── models.py                # Модель BlogPost
+│   ├── urls.py                  # URL маршруты блога
+│   ├── views.py                 # CBV для блога
+│   └── templates/
+│       └── blog/
+│           ├── blogpost_list.html
+│           ├── blogpost_detail.html
+│           ├── blogpost_form.html
+│           └── blogpost_confirm_delete.html
+├── static/                      # Статические файлы (CSS, JS, изображения)
+│   └── css/
+│       └── main.css             # Основные стили для всего проекта
+├── media/                       # Загружаемые пользователями медиа-файлы
+│   ├── products/                # Изображения продуктов
+│   └── blog_previews/           # Превью блоговых записей
+├── fixtures/                    # Тестовые данные (JSON)
+│   ├── categories.json
+│   ├── products.json
+│   └── contacts.json
+├── manage.py                   # Управляющий скрипт Django
+├── .env.sample                 # Шаблон переменных окружения
+├── pyproject.toml              # Конфигурация Poetry и список зависимостей
+└── README.md                   # Документация проекта
+
 ```
 
 ---
