@@ -1,0 +1,54 @@
+{% extends 'catalog/base.html' %}
+{% load static %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <h1>🔐 Вход в аккаунт</h1>
+  
+  <form method="post" class="auth-form" novalidate>
+    {% csrf_token %}
+    
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+    
+    <!-- Email -->
+    <div class="form-group">
+      <label for="{{ form.username.id_for_label }}">
+        Email <span class="required">*</span>
+      </label>
+      {{ form.username }}
+      {% if form.username.errors %}
+        <div class="error-message">
+          {{ form.username.errors }}
+        </div>
+      {% endif %}
+    </div>
+    
+    <!-- Пароль -->
+    <div class="form-group">
+      <label for="{{ form.password.id_for_label }}">
+        Пароль <span class="required">*</span>
+      </label>
+      {{ form.password }}
+      {% if form.password.errors %}
+        <div class="error-message">
+          {{ form.password.errors }}
+        </div>
+      {% endif %}
+    </div>
+    
+    <button type="submit" class="btn btn-primary btn-block">
+      Войти
+    </button>
+  </form>
+  
+  <p class="auth-link">
+    Нет аккаунта? <a href="{% url 'accounts:register' %}">Зарегистрироваться</a>
+  </p>
+</div>
+{% endblock %}

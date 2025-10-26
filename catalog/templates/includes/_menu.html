@@ -1,5 +1,14 @@
-<nav class="menu">
-  <a href="{% url 'catalog:home' %}">🏠 Главная</a>
-  <a href="{% url 'catalog:contacts' %}">✉️ Контакты</a>
-  <a href="{% url 'catalog:product_add' %}">➕ Добавить товар</a>
+<nav>
+    <a href="{% url 'catalog:home' %}">Главная</a>
+    <a href="{% url 'blog:blogpost_list' %}">Блог</a>
+    <a href="{% url 'catalog:contacts' %}">Контакты</a>
+
+    {% if user.is_authenticated %}
+        <span style="color: #fff; margin: 0 15px;">Привет, {{ user.email }}!</span>
+        <a href="{% url 'catalog:product_add' %}" style="background: #28a745;">➕ Добавить товар</a>
+        <a href="{% url 'accounts:logout' %}" style="background: #dc3545;">Выход</a>
+    {% else %}
+        <a href="{% url 'accounts:login' %}" style="background: #0d6efd;">Вход</a>
+        <a href="{% url 'accounts:register' %}" style="background: #28a745;">Регистрация</a>
+    {% endif %}
 </nav>
