@@ -3,6 +3,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.core.mail import send_mail
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import UserRegisterForm, UserLoginForm
 from .models import User
 
@@ -37,7 +38,7 @@ class RegisterView(CreateView):
 class UserLoginView(LoginView):
     """Авторизация пользователя"""
     form_class = UserLoginForm
-    template_name = 'accounts/login.html'  # ✅ Изменил путь!
+    template_name = 'accounts/login.html'
 
     def get_success_url(self):
         """URL для редиректа после успешного входа"""

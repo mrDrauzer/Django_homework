@@ -1,7 +1,8 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Product
-from .forms import ProductForm  # ✅ Импортируем форму
+from .forms import ProductForm
 
 
 class ProductListView(ListView):
@@ -18,7 +19,7 @@ class ProductDetailView(DetailView):
     context_object_name = 'product'
 
 
-class ProductCreateView(CreateView):
+class ProductCreateView(LoginRequiredMixin, CreateView):
     """Создание нового товара"""
     model = Product
     form_class = ProductForm  # ✅ Используем форму вместо fields
@@ -26,7 +27,7 @@ class ProductCreateView(CreateView):
     success_url = reverse_lazy('catalog:home')
 
 
-class ProductUpdateView(UpdateView):
+class ProductUpdateView(LoginRequiredMixin, UpdateView):
     """Редактирование товара"""
     model = Product
     form_class = ProductForm  # ✅ Используем форму вместо fields
@@ -37,7 +38,7 @@ class ProductUpdateView(UpdateView):
         return reverse_lazy('catalog:product_detail', kwargs={'pk': self.object.pk})
 
 
-class ProductDeleteView(DeleteView):
+class ProductDeleteView(LoginRequiredMixin, DeleteView):
     """Удаление товара"""
     model = Product
     template_name = 'catalog/product_confirm_delete.html'  # ✅ Добавляем шаблон
