@@ -10,7 +10,7 @@ from .views import (
 app_name = 'blog'
 
 urlpatterns = [
-    path('', BlogPostListView.as_view(), name='list'),
+    path('', BlogPostListView.as_view(), name='blogpost_list'),  # ✅ Изменил на blogpost_list
     path('<int:pk>/', BlogPostDetailView.as_view(), name='detail'),
     path('create/', BlogPostCreateView.as_view(), name='create'),
     path('<int:pk>/update/', BlogPostUpdateView.as_view(), name='update'),

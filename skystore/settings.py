@@ -36,8 +36,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     "catalog",
     "blog",
+    "accounts",  # ✅ Авторизация
 ]
 
 MIDDLEWARE = [
@@ -112,11 +114,6 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# Убираем STATICFILES_DIRS чтобы избежать предупреждения
-# STATICFILES_DIRS = [
-#     BASE_DIR / "static",
-# ]
-
 # Media files
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -124,3 +121,24 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ✅ ДОБАВЛЕНО: Кастомная модель пользователя
+AUTH_USER_MODEL = 'accounts.User'  # ✅ ИЗМЕНЕНО: с 'users.User' на 'accounts.User'
+
+# ✅ ДОБАВЛЕНО: Настройки email (для отправки приветственных писем)
+# Для разработки используем консольный бэкенд (письма выводятся в терминал)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Для продакшена (например, Gmail) раскомментируй и заполни:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'your-app-password'
+# DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
+
+# ✅ ДОБАВЛЕНО: URL для редиректа после логина/логаута
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = '/accounts/login/'
