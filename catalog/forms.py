@@ -94,26 +94,24 @@ class ProductForm(forms.ModelForm):
 
     def clean_image(self):
         """
-        ⭐ Дополнительная валидация изображения:
-        - Формат: только JPEG или PNG
-        - Размер: не более 5 МБ
+        Валидируем изображение только если оно новое (загружается через форму)
         """
         image = self.cleaned_data.get('image')
-
         if image:
-            # Проверка формата
-            valid_formats = ['image/jpeg', 'image/png']
-            if image.content_type not in valid_formats:
-                raise ValidationError(
-                    'Загружайте изображения только в форматах JPEG или PNG'
-                )
+            # Только если это загруженный файл (InMemoryUploadedFile)
+            content_type = getattr(image, 'content_type', None)
+            if content_type:
+                valid_formats = ['image/jpeg', 'image/png']
+                if content_type not in valid_formats:
+                    raise ValidationError(
+                        'Загружайте изображения только в форматах JPEG или PNG'
+                    )
 
-            # Проверка размера (5 МБ = 5 * 1024 * 1024 байт)
-            max_size = 5 * 1024 * 1024  # 5 МБ
-            if image.size > max_size:
-                raise ValidationError(
-                    f'Размер изображения не должен превышать 5 МБ. '
-                    f'Текущий размер: {image.size / (1024 * 1024):.2f} МБ'
-                )
-
+                max_size = 5 * 1024 * 1024  # 5 МБ
+                if image.size > max_size:
+                    raise ValidationError(
+                        f'Размер изображения не должен превышать 5 МБ. '
+                        f'Текущий размер: {image.size / (1024 * 1024):.2f} МБ'
+                    )
+            # если image не имеет content_type — это просто "старый" файл, его не проверяем заново
         return image

@@ -1,9 +1,9 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponseForbidden
 from .models import Product
 from .forms import ProductForm
-
 
 class ProductListView(ListView):
     """Список товаров на главной странице"""
@@ -11,46 +11,70 @@ class ProductListView(ListView):
     template_name = 'catalog/home.html'
     context_object_name = 'products'
 
-
 class ProductDetailView(DetailView):
     """Детальная страница товара"""
     model = Product
     template_name = 'catalog/product_detail.html'
     context_object_name = 'product'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['is_moderator'] = user.is_authenticated and user.groups.filter(name='Модератор продуктов').exists()
+        context['can_unpublish'] = user.is_authenticated and user.has_perm('catalog.can_unpublish_product')
+        return context
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
     """Создание нового товара"""
     model = Product
-    form_class = ProductForm  # ✅ Используем форму вместо fields
+    form_class = ProductForm
     template_name = 'catalog/product_form.html'
     success_url = reverse_lazy('catalog:home')
 
+    def form_valid(self, form):
+        """Назначение владельца товара"""
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 class ProductUpdateView(LoginRequiredMixin, UpdateView):
-    """Редактирование товара"""
+    """Редактирование товара — только для владельца или модератора"""
     model = Product
-    form_class = ProductForm  # ✅ Используем форму вместо fields
+    form_class = ProductForm
     template_name = 'catalog/product_form.html'
 
     def get_success_url(self):
-        """Перенаправляем на страницу товара после редактирования"""
+        """После редактирования — на страницу товара"""
         return reverse_lazy('catalog:product_detail', kwargs={'pk': self.object.pk})
 
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        user = request.user
+        is_moderator = user.groups.filter(name="Модератор продуктов").exists()
+        has_perm = user.has_perm('catalog.can_unpublish_product')
+        if obj.owner == user or is_moderator or has_perm:
+            return super().dispatch(request, *args, **kwargs)
+        return HttpResponseForbidden("Нет доступа к изменению!")
 
 class ProductDeleteView(LoginRequiredMixin, DeleteView):
-    """Удаление товара"""
+    """Удаление товара — только для владельца или модератора"""
     model = Product
-    template_name = 'catalog/product_confirm_delete.html'  # ✅ Добавляем шаблон
+    template_name = 'catalog/product_confirm_delete.html'
     success_url = reverse_lazy('catalog:home')
 
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        user = request.user
+        is_moderator = user.groups.filter(name="Модератор продуктов").exists()
+        has_perm = user.has_perm('catalog.can_unpublish_product')
+        if obj.owner == user or is_moderator or has_perm:
+            return super().dispatch(request, *args, **kwargs)
+        return HttpResponseForbidden("Нет доступа к удалению!")
 
 class ContactsView(TemplateView):
     """Страница контактов"""
     template_name = 'catalog/contacts.html'
 
     def post(self, request, *args, **kwargs):
-        """Обработка отправки формы контактов"""
         name = request.POST.get('name')
         email = request.POST.get('email')
         message = request.POST.get('message')
