@@ -1,22 +1,17 @@
 from django.db import models
-
+from django.conf import settings
 
 class Category(models.Model):
-    """Модель категории продукта"""
     name = models.CharField(max_length=200, verbose_name='Наименование')
     description = models.TextField(blank=True, verbose_name='Описание')
-
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ['name']
-
     def __str__(self):
         return self.name
 
-
 class Product(models.Model):
-    """Модель продукта"""
     name = models.CharField(max_length=200, verbose_name='Наименование')
     description = models.TextField(blank=True, verbose_name='Описание')
     image = models.ImageField(
@@ -42,20 +37,31 @@ class Product(models.Model):
     )
     updated_at = models.DateTimeField(
         auto_now=True,
-        verbose_name='Дата последнего изменения'
+        verbose_name='Дата изменения'
+    )
+
+    is_published = models.BooleanField(default=False, verbose_name='Опубликован')
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='products',
+        verbose_name='Владелец',
+        null=True, blank=True
     )
 
     class Meta:
         verbose_name = 'Продукт'
         verbose_name_plural = 'Продукты'
         ordering = ['-created_at']
+        permissions = [
+            ("can_unpublish_product", "Может отменять публикацию продукта"),
+        ]
 
     def __str__(self):
         return self.name
 
-
 class Contact(models.Model):
-    """Модель контактных данных (дополнительное задание)"""
+    """Модель контактных данных"""
     name = models.CharField(max_length=100, verbose_name='Название организации')
     email = models.EmailField(verbose_name='Email')
     phone = models.CharField(max_length=20, verbose_name='Телефон')
