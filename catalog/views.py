@@ -3,6 +3,8 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Product
 from .forms import ProductForm
+from catalog.models import Category
+from catalog.services import get_products_by_category
 
 
 class ProductListView(ListView):
@@ -56,3 +58,18 @@ class ContactsView(TemplateView):
         message = request.POST.get('message')
         print(f'Получено сообщение от {name} ({email}): {message}')
         return self.render_to_response(self.get_context_data())
+
+class CategoryProductListView(ListView):
+    model = Product
+    template_name = 'catalog/product_list.html'
+
+    def get_queryset(self):
+        category_pk = self.kwargs['pk']
+        return get_products_by_category(category_pk)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_pk = self.kwargs['pk']
+        category = Category.objects.get(pk=category_pk)
+        context['title'] = category.name
+        return context
