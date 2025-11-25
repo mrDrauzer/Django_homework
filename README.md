@@ -77,14 +77,68 @@
 
 ### ⚡ Домашнее задание #7 — Кеширование и оптимизация (NEW)
 
-- ✅ **Redis** подключен как брокер кеширования
-- ✅ **Настройки кеша** вынесены в `settings.py` (`CACHES`, `CACHE_ENABLED`)
+- ✅ **Redis** подключен как бэкенд кеширования (Django RedisCache)
+- ✅ **Настройки кеша** вынесены в `settings.py` (`CACHES`, `CACHE_ENABLED`, `REDIS_URL`)
 - ✅ **Кеширование контроллера**: страница детального просмотра товара кешируется целиком (`cache_page`)
 - ✅ **Сервисный слой**: создана функция `get_products_by_category` в `services.py`
 - ✅ **Низкоуровневое кеширование**: список продуктов по категориям кешируется вручную через `cache.set/get`
 - ✅ **Новая страница**: просмотр товаров конкретной категории (`/catalog/category/<pk>/`)
 
 ---
+
+## 📁 Структура проекта
+
+Django_homework/
+- manage.py — точка входа Django
+- docker-compose.yml — быстрый запуск Redis
+- README.md — документация проекта
+- requirements.txt, pyproject.toml, poetry.lock — зависимости
+- data.json — вспомогательные данные (если используются)
+- static/
+  - css/
+    - main.css — стили
+- skystore/ — корневой проект Django
+  - __init__.py
+  - settings.py — настройки (PostgreSQL, Redis Cache, локализация и др.)
+  - urls.py — маршрутизация проекта
+  - wsgi.py, asgi.py — точки входа серверов
+- catalog/ — приложение каталога товаров
+  - __init__.py, apps.py
+  - admin.py — админка
+  - models.py — модели Category, Product, Contact
+  - forms.py — формы (валидация и стилизация)
+  - services.py — сервисы (кеширование выборок и пр.)
+  - urls.py, views.py — маршруты и контроллеры (CBV)
+  - fixtures/
+    - catalog_data.json — фикстуры для быстрого наполнения
+  - management/commands/
+    - fill_catalog.py — кастомная команда заполнения
+    - runserver_info.py — печать полезной информации при старте
+  - templates/
+    - base.html — базовый шаблон
+    - includes/_menu.html — меню
+    - catalog/
+      - home.html — список товаров (с пагинацией)
+      - product_detail.html — детальная страница товара (кешируется)
+      - product_form.html, product_confirm_delete.html — CRUD шаблоны
+      - contacts.html — страница контактов
+- blog/ — приложение блога
+  - __init__.py, apps.py
+  - admin.py, models.py
+  - urls.py, views.py — CRUD для статей, счетчик просмотров
+  - templates/blog/
+    - blogpost_list.html, blogpost_detail.html, blogpost_form.html, blogpost_confirm_delete.html
+- accounts/ — кастомная аутентификация по email
+  - __init__.py, apps.py
+  - models.py — кастомная модель пользователя
+  - forms.py — формы регистрации/логина
+  - admin.py — админка пользователя
+  - urls.py, views.py
+  - templates/accounts/
+    - login.html, register.html
+- media/ — загружаемые файлы (создается автоматически при загрузках)
+
+> Примечание: миграции для приложений находятся в соответствующих папках migrations/.
 
 ## 🛠 Запуск проекта
 ### 1. Клонировать репозиторий
@@ -93,25 +147,73 @@ cd Django_homework
 
 text
 
-### 2. Скопировать и настроить переменные окружения
-cp .env.sample .env
+### 2. Переменные окружения
+Скопируйте `.env.example` в `.env` в корне проекта (рядом с `manage.py`) и заполните своими значениями:
 
-Отредактируйте .env файл своими значениями (включая настройки CACHE)
-text
+SECRET_KEY=your-secret-key
+DEBUG=True
+
+# База данных (PostgreSQL)
+# ВАЖНО: вводите значения обычными символами, без «умных кавычек» и неразрывных пробелов.
+# Если видите ошибку UnicodeDecodeError при подключении к БД — проверьте .env на лишние символы.
+DB_NAME=your_db
+DB_USER=your_user
+DB_PASSWORD=your_password
+DB_HOST=127.0.0.1
+DB_PORT=5432
+
+# Фолбэк на SQLite (для локальной разработки)
+# Установите в True, если PostgreSQL недоступен или не настроен
+# USE_SQLITE=True
+
+# Кеширование (Redis)
+CACHE_ENABLED=True
+REDIS_URL=redis://127.0.0.1:6379/0
+
+> Важно: Файл `.env` намеренно не хранится в Git (см. .gitignore), поэтому реальные данные для подключения к БД и ключи необходимо ввести заново. Если прежний `.env` был перезаписан или удалён, восстановите значения вручную — возьмите шаблон из `.env.example` и подставьте свои креденшелы.
 
 ### 3. Установить зависимости
-poetry install
-poetry shell
+- Вариант Poetry:
+  - poetry install
+  - poetry shell
 
-# Не забудьте установить Redis!
-# pip install redis
-
-text
+- Вариант pip:
+  - pip install -r requirements.txt
 
 ### 4. Запустить Redis
+Самый простой способ — через Docker Compose:
+
+docker compose up -d redis
+
+Либо локально установленный Redis:
+
 redis-server
 
-text
+#### Подробно: как установить и проверить Redis
+
+1) Вариант Docker (рекомендуется):
+   - В корне проекта уже есть `docker-compose.yml` с сервисом redis.
+   - Запустите: `docker compose up -d redis`
+   - Проверьте, что контейнер запустился и порт 6379 слушается.
+
+2) Windows без Docker:
+   - Официальных сборок под Windows нет. Надёжный путь — Docker Desktop или WSL2 (Ubuntu) и установка через `apt` внутри WSL.
+   - Альтернатива — сторонние сборки/инсталляторы, но они неофициальные.
+
+3) Linux (Ubuntu/Debian):
+   - `sudo apt update && sudo apt install redis-server`
+   - `sudo systemctl enable --now redis-server`
+
+4) Включить кэш Redis в проекте:
+   - В `.env` установите:
+     - `CACHE_ENABLED=True`
+     - при необходимости измените `REDIS_URL` (по умолчанию `redis://127.0.0.1:6379/0`)
+
+5) Проверить подключение к кэшу:
+   - Выполните: `python manage.py cache_ping`
+   - Вы увидите бэкенд кэша и результат тестовой записи/чтения. Если Redis не запущен, команда завершится ошибкой.
+
+> Примечание: если Redis не нужен, просто оставьте `CACHE_ENABLED=False` (по умолчанию), и проект будет использовать локальный кэш в памяти процесса (LocMemCache).
 
 ### 5. Применить миграции
 python manage.py migrate

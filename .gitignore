@@ -1,10 +1,14 @@
+############################
+# Git ignore for this repo #
+############################
+
 # IDE
 .idea/
 .vscode/
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
 .Python
@@ -23,4 +27,7 @@ media/
 # OS
 .DS_Store
 Thumbs.db
-/.env
+
+# Environment files
+.env
+.env.*
