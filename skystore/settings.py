@@ -12,7 +12,45 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
-from decouple import config
+try:
+    # Основной путь — использовать python-decouple, если он установлен
+    from decouple import config  # type: ignore
+except Exception:
+    # Фолбэк: минимальная замена config() через os.environ
+    def config(key, default=None, cast=None):  # noqa: N802 — совместимость с decouple API
+        value = os.environ.get(key, default)
+        if cast is not None and value is not None:
+            try:
+                return cast(value)
+            except Exception:
+                # Если кастинг не удался — возвращаем оригинальное значение
+                return value
+        return value
+
+
+# Helper: normalize environment string values to avoid hidden non‑UTF8 characters
+def env_str(key: str, default: str | None = None) -> str | None:
+    """
+    Read a string from environment/.env and normalize it:
+    - replace non-breaking spaces with regular spaces
+    - strip surrounding whitespace
+    - ensure it can be encoded as UTF-8; if not, drop invalid bytes
+
+    This helps avoid psycopg2 UnicodeDecodeError caused by pasted NBSP/CP1251 chars.
+    """
+    val = config(key, default=default)
+    if val is None:
+        return None
+    if not isinstance(val, str):
+        return val
+    # Replace common problematic whitespace
+    cleaned = val.replace("\u00A0", " ").replace("\xa0", " ").strip()
+    try:
+        cleaned.encode("utf-8")
+    except Exception:
+        # Drop/replace un-encodable characters to keep connection params safe
+        cleaned = cleaned.encode("utf-8", errors="ignore").decode("utf-8", errors="ignore")
+    return cleaned
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +83,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    # Включаем локализацию (переключение языка и форматов дат/чисел)
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -74,16 +114,34 @@ WSGI_APPLICATION = "skystore.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config('DB_NAME'),
-        "USER": config('DB_USER'),
-        "PASSWORD": config('DB_PASSWORD'),
-        "HOST": config('DB_HOST', default='127.0.0.1'),
-        "PORT": config('DB_PORT', default='5433'),
+# Database configuration with robust env handling and a safe fallback
+USE_SQLITE = config('USE_SQLITE', default=False, cast=bool)
+
+DB_NAME = env_str('DB_NAME')
+DB_USER = env_str('DB_USER')
+DB_PASSWORD = env_str('DB_PASSWORD')
+DB_HOST = env_str('DB_HOST', default='127.0.0.1')
+DB_PORT = env_str('DB_PORT', default='5432')  # 5432 — стандартный порт PostgreSQL
+
+if USE_SQLITE or not all([DB_NAME, DB_USER, DB_PASSWORD]):
+    # Fallback to SQLite for local/dev when Postgres is not configured
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": DB_NAME,
+            "USER": DB_USER,
+            "PASSWORD": DB_PASSWORD,
+            "HOST": DB_HOST,
+            "PORT": DB_PORT,
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -142,3 +200,43 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/'
+
+"""
+Кэширование (Redis)
+-------------------
+Используем встроенный в Django 5 RedisCache-бэкенд. Для работы требуется пакет
+`redis` (добавлен в зависимости). Включение/выключение кэша и адрес Redis
+настраиваются через переменные окружения:
+
+  CACHE_ENABLED=true|false
+  REDIS_URL=redis://127.0.0.1:6379/0
+
+При CACHE_ENABLED=false автоматически используется локальный in-memory кэш,
+чтобы проект мог запускаться даже без поднятого Redis (например, в CI).
+"""
+
+# Флаг включения кэширования
+# По умолчанию кэш через Redis выключен, чтобы проект запускался без поднятого Redis
+CACHE_ENABLED = config('CACHE_ENABLED', default=False, cast=bool)
+
+# URL подключения к Redis: redis://[:password]@host:port/db
+REDIS_URL = config('REDIS_URL', default='redis://127.0.0.1:6379/0')
+
+if CACHE_ENABLED:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            # Доп. настройки (при необходимости):
+            # "OPTIONS": {"db": 0},
+            # "TIMEOUT": 300,
+        }
+    }
+else:
+    # Без Redis: безопасный фолбэк на локальный кэш в памяти процесса
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-in-memory",
+        }
+    }

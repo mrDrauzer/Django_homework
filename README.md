@@ -74,9 +74,71 @@
     - Черновики (`is_published=False`) не показываются пользователям
     - Фильтрация по публикации и просмотрам реализована
 - ✅ Главный CSS-файл обновлён — все кнопки и формы стилизованы
-- ✅ README.md полностью обновлён и готов к сдаче проекта
+
+### ⚡ Домашнее задание #7 — Кеширование и оптимизация (NEW)
+
+- ✅ **Redis** подключен как бэкенд кеширования (Django RedisCache)
+- ✅ **Настройки кеша** вынесены в `settings.py` (`CACHES`, `CACHE_ENABLED`, `REDIS_URL`)
+- ✅ **Кеширование контроллера**: страница детального просмотра товара кешируется целиком (`cache_page`)
+- ✅ **Сервисный слой**: создана функция `get_products_by_category` в `services.py`
+- ✅ **Низкоуровневое кеширование**: список продуктов по категориям кешируется вручную через `cache.set/get`
+- ✅ **Новая страница**: просмотр товаров конкретной категории (`/catalog/category/<pk>/`)
 
 ---
+
+## 📁 Структура проекта
+
+Django_homework/
+- manage.py — точка входа Django
+- docker-compose.yml — быстрый запуск Redis
+- README.md — документация проекта
+- requirements.txt, pyproject.toml, poetry.lock — зависимости
+- data.json — вспомогательные данные (если используются)
+- static/
+  - css/
+    - main.css — стили
+- skystore/ — корневой проект Django
+  - __init__.py
+  - settings.py — настройки (PostgreSQL, Redis Cache, локализация и др.)
+  - urls.py — маршрутизация проекта
+  - wsgi.py, asgi.py — точки входа серверов
+- catalog/ — приложение каталога товаров
+  - __init__.py, apps.py
+  - admin.py — админка
+  - models.py — модели Category, Product, Contact
+  - forms.py — формы (валидация и стилизация)
+  - services.py — сервисы (кеширование выборок и пр.)
+  - urls.py, views.py — маршруты и контроллеры (CBV)
+  - fixtures/
+    - catalog_data.json — фикстуры для быстрого наполнения
+  - management/commands/
+    - fill_catalog.py — кастомная команда заполнения
+    - runserver_info.py — печать полезной информации при старте
+  - templates/
+    - base.html — базовый шаблон
+    - includes/_menu.html — меню
+    - catalog/
+      - home.html — список товаров (с пагинацией)
+      - product_detail.html — детальная страница товара (кешируется)
+      - product_form.html, product_confirm_delete.html — CRUD шаблоны
+      - contacts.html — страница контактов
+- blog/ — приложение блога
+  - __init__.py, apps.py
+  - admin.py, models.py
+  - urls.py, views.py — CRUD для статей, счетчик просмотров
+  - templates/blog/
+    - blogpost_list.html, blogpost_detail.html, blogpost_form.html, blogpost_confirm_delete.html
+- accounts/ — кастомная аутентификация по email
+  - __init__.py, apps.py
+  - models.py — кастомная модель пользователя
+  - forms.py — формы регистрации/логина
+  - admin.py — админка пользователя
+  - urls.py, views.py
+  - templates/accounts/
+    - login.html, register.html
+- media/ — загружаемые файлы (создается автоматически при загрузках)
+
+> Примечание: миграции для приложений находятся в соответствующих папках migrations/.
 
 ## 🛠 Запуск проекта
 ### 1. Клонировать репозиторий
@@ -85,27 +147,83 @@ cd Django_homework
 
 text
 
-### 2. Скопировать и настроить переменные окружения
-cp .env.sample .env
+### 2. Переменные окружения
+Скопируйте `.env.example` в `.env` в корне проекта (рядом с `manage.py`) и заполните своими значениями:
 
-Отредактируйте .env файл своими значениями
-text
+SECRET_KEY=your-secret-key
+DEBUG=True
+
+# База данных (PostgreSQL)
+# ВАЖНО: вводите значения обычными символами, без «умных кавычек» и неразрывных пробелов.
+# Если видите ошибку UnicodeDecodeError при подключении к БД — проверьте .env на лишние символы.
+DB_NAME=your_db
+DB_USER=your_user
+DB_PASSWORD=your_password
+DB_HOST=127.0.0.1
+DB_PORT=5432
+
+# Фолбэк на SQLite (для локальной разработки)
+# Установите в True, если PostgreSQL недоступен или не настроен
+# USE_SQLITE=True
+
+# Кеширование (Redis)
+CACHE_ENABLED=True
+REDIS_URL=redis://127.0.0.1:6379/0
+
+> Важно: Файл `.env` намеренно не хранится в Git (см. .gitignore), поэтому реальные данные для подключения к БД и ключи необходимо ввести заново. Если прежний `.env` был перезаписан или удалён, восстановите значения вручную — возьмите шаблон из `.env.example` и подставьте свои креденшелы.
 
 ### 3. Установить зависимости
-poetry install
-poetry shell
+- Вариант Poetry:
+  - poetry install
+  - poetry shell
 
-text
+- Вариант pip:
+  - pip install -r requirements.txt
 
-### 4. Применить миграции
+### 4. Запустить Redis
+Самый простой способ — через Docker Compose:
+
+docker compose up -d redis
+
+Либо локально установленный Redis:
+
+redis-server
+
+#### Подробно: как установить и проверить Redis
+
+1) Вариант Docker (рекомендуется):
+   - В корне проекта уже есть `docker-compose.yml` с сервисом redis.
+   - Запустите: `docker compose up -d redis`
+   - Проверьте, что контейнер запустился и порт 6379 слушается.
+
+2) Windows без Docker:
+   - Официальных сборок под Windows нет. Надёжный путь — Docker Desktop или WSL2 (Ubuntu) и установка через `apt` внутри WSL.
+   - Альтернатива — сторонние сборки/инсталляторы, но они неофициальные.
+
+3) Linux (Ubuntu/Debian):
+   - `sudo apt update && sudo apt install redis-server`
+   - `sudo systemctl enable --now redis-server`
+
+4) Включить кэш Redis в проекте:
+   - В `.env` установите:
+     - `CACHE_ENABLED=True`
+     - при необходимости измените `REDIS_URL` (по умолчанию `redis://127.0.0.1:6379/0`)
+
+5) Проверить подключение к кэшу:
+   - Выполните: `python manage.py cache_ping`
+   - Вы увидите бэкенд кэша и результат тестовой записи/чтения. Если Redis не запущен, команда завершится ошибкой.
+
+> Примечание: если Redis не нужен, просто оставьте `CACHE_ENABLED=False` (по умолчанию), и проект будет использовать локальный кэш в памяти процесса (LocMemCache).
+
+### 5. Применить миграции
 python manage.py migrate
 
 text
 
-### 5. Создать суперпользователя
+### 6. Создать суперпользователя
 python manage.py createsuperuser
 
-### 6. Запустить сервер
+### 7. Запустить сервер
 python manage.py runserver
 
 text
@@ -127,178 +245,10 @@ text
 
 ---
 
-## 📋 Модели
-
-### Category (Категория)
-- `name` - Наименование категории
-- `description` - Описание категории
-
-### Product (Продукт)  
-- `name` - Наименование продукта
-- `description` - Описание продукта
-- `image` - Изображение продукта
-- `category` - Связь с категорией (ForeignKey)
-- `price` - Цена за покупку
-- `created_at` - Дата создания
-- `updated_at` - Дата последнего изменения
-
-### Contact (Контакт)
-- `name` - Название организации
-- `email` - Email адрес
-- `phone` - Номер телефона
-- `address` - Адрес
-
-### BlogPost (Блоговая запись) ⭐ NEW
-- `title` - Заголовок (макс. 200 символов)
-- `content` - Содержимое статьи (макс. 35,000 символов)
-- `preview` - Превью-изображение
-- `created_at` - Дата создания
-- `is_published` - Статус публикации
-- `views_count` - Счётчик просмотров (автоинкремент)
-
----
-
 ## 🔧 Технологии
 - Django 5.2.6
 - PostgreSQL
+- Redis (Кеширование)
 - Python 3.12
 - Poetry
 - Class-Based Views (CBV)
-
----
-
-## 📁 Структура проекта
-
-```
-Django_homework/
-├── skystore/            
-│   ├── settings.py      
-│   ├── urls.py          
-│   └── wsgi.py          
-├── catalog/             
-│   ├── admin.py         
-│   ├── forms.py         
-│   ├── models.py        
-│   ├── urls.py          
-│   ├── views.py         
-│   └── templates/
-│       └── catalog/
-│           ├── base.html
-│           ├── home.html
-│           ├── contacts.html
-│           ├── product_detail.html
-│           ├── product_form.html
-│           └── product_confirm_delete.html
-├── blog/                
-│   ├── admin.py         
-│   ├── models.py        
-│   ├── urls.py          
-│   ├── views.py         
-│   └── templates/
-│       └── blog/
-│           ├── blogpost_list.html
-│           ├── blogpost_detail.html
-│           ├── blogpost_form.html
-│           └── blogpost_confirm_delete.html
-├── accounts/            # Авторизация через email (NEW)
-│   ├── admin.py
-│   ├── forms.py
-│   ├── models.py
-│   ├── urls.py
-│   ├── views.py
-│   └── templates/
-│       └── accounts/
-│           ├── login.html
-│           ├── register.html
-│           └── (другие)
-├── static/
-│   └── css/
-│       └── main.css
-├── media/
-│   ├── products/
-│   └── blog_previews/
-├── fixtures/
-│   ├── categories.json
-│   ├── products.json
-│   └── contacts.json
-├── manage.py
-├── .env.sample
-├── pyproject.toml
-└── README.md
-
-
-```
-
----
-
-## 🎯 Админ-панель
-Доступна по адресу: [**http://127.0.0.1:8000/admin/**]
-(http://127.0.0.1:8000/admin/)
-
-### Функциональность админки:
-- **Категории**: ID, название, поиск по названию
-- **Продукты**: ID, название, цена, категория + фильтр по категории + поиск по названию и описанию
-- **Контакты**: управление контактной информацией
-- **Блоговые записи** ⭐ NEW:
-  - ID, заголовок, дата создания, статус публикации, просмотры
-  - Фильтр по статусу публикации
-  - Поиск по заголовку и содержимому
-  - Редактирование статуса публикации прямо в списке
-
----
-
-## 🌐 Доступные страницы
-
-| URL | Описание | Контроллер |
-|-----|----------|------------|
-| `/` | Главная страница (каталог товаров) | `ProductListView` (CBV) |
-| `/contacts/` | Страница контактов с формой | `ContactsView` (CBV) |
-| `/product/<id>/` | Детальная карточка товара | `ProductDetailView` (CBV) |
-| `/product/add/` | Форма добавления товара | `ProductCreateView` (CBV) |
-| `/blog/` | Список блоговых записей ⭐ | `BlogPostListView` (CBV) |
-| `/blog/<id>/` | Детальная страница статьи ⭐ | `BlogPostDetailView` (CBV) |
-| `/blog/create/` | Создание новой статьи ⭐ | `BlogPostCreateView` (CBV) |
-| `/blog/<id>/update/` | Редактирование статьи ⭐ | `BlogPostUpdateView` (CBV) |
-| `/blog/<id>/delete/` | Удаление статьи ⭐ | `BlogPostDeleteView` (CBV) |
-| `/admin/` | Панель администратора | Django Admin |
-
----
-
-## 🛠 Кастомные команды
-- `python manage.py fill_catalog` - заполнение каталога тестовыми данными
-
----
-
-## 🔧 Технологии
-
-| Технология | Версия | Описание |
-|-----------|--------|----------|
-| Python | 3.12 | Язык программирования |
-| Django | 5.2.6 | Web-фреймворк |
-| PostgreSQL | 15+ | База данных |
-| Poetry | — | Управление зависимостями |
-| python-decouple | — | Управление переменными окружения |
-| Pillow | — | Обработка изображений |
-
----
-
-## 🎨 Особенности реализации
-
-### Class-Based Views (CBV)
-Все контроллеры переведены на CBV для лучшей читаемости и переиспользования кода:
-- `ListView` - списки товаров и статей
-- `DetailView` - детальные страницы с кастомной логикой
-- `CreateView` - создание объектов
-- `UpdateView` - редактирование с перенаправлением
-- `DeleteView` - удаление с подтверждением
-- `TemplateView` - статические страницы (контакты)
-
-### Счётчик просмотров
-Автоматическое увеличение счётчика при каждом открытии статьи через переопределение метода `get_object()` в `BlogPostDetailView`.
-
-### Валидация данных
-- Заголовок: максимум 200 символов
-- Содержимое: максимум 35,000 символов (~5,000 слов)
-- Счётчик символов в форме создания/редактирования
-
----
